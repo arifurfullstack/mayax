@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.4"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -201,6 +201,7 @@ export type Database = {
       leads: {
         Row: {
           ai_score: number
+          approved_at: string | null
           buyer_type: string
           city: string
           created_at: string
@@ -217,12 +218,20 @@ export type Database = {
           income: number | null
           initials: string
           lead_email: string
+          listed_by_id: string | null
+          listed_by_role: string | null
           phone: string
           price: number
+          provider_payout_amount: number | null
+          provider_payout_status: string | null
           province: string
           purchased_by_dealer_id: string | null
           quality_grade: string
           reference_code: string
+          review_notes: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
           sold_at: string | null
           sold_status: string
           vehicle_preference: string | null
@@ -230,6 +239,7 @@ export type Database = {
         }
         Insert: {
           ai_score: number
+          approved_at?: string | null
           buyer_type: string
           city: string
           created_at?: string
@@ -246,12 +256,20 @@ export type Database = {
           income?: number | null
           initials: string
           lead_email: string
+          listed_by_id?: string | null
+          listed_by_role?: string | null
           phone: string
           price: number
+          provider_payout_amount?: number | null
+          provider_payout_status?: string | null
           province: string
           purchased_by_dealer_id?: string | null
           quality_grade: string
           reference_code: string
+          review_notes?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           sold_at?: string | null
           sold_status?: string
           vehicle_preference?: string | null
@@ -259,6 +277,7 @@ export type Database = {
         }
         Update: {
           ai_score?: number
+          approved_at?: string | null
           buyer_type?: string
           city?: string
           created_at?: string
@@ -275,12 +294,20 @@ export type Database = {
           income?: number | null
           initials?: string
           lead_email?: string
+          listed_by_id?: string | null
+          listed_by_role?: string | null
           phone?: string
           price?: number
+          provider_payout_amount?: number | null
+          provider_payout_status?: string | null
           province?: string
           purchased_by_dealer_id?: string | null
           quality_grade?: string
           reference_code?: string
+          review_notes?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           sold_at?: string | null
           sold_status?: string
           vehicle_preference?: string | null
@@ -296,8 +323,166 @@ export type Database = {
           },
         ]
       }
+      normal_user_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          notification_email: string | null
+          phone: string | null
+          updated_at: string
+          wallet_balance: number
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id: string
+          notification_email?: string | null
+          phone?: string | null
+          updated_at?: string
+          wallet_balance?: number
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          notification_email?: string | null
+          phone?: string | null
+          updated_at?: string
+          wallet_balance?: number
+        }
+        Relationships: []
+      }
+      platform_settings: {
+        Row: {
+          description: string | null
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: string
+        }
+        Insert: {
+          description?: string | null
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: string
+        }
+        Update: {
+          description?: string | null
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
+      provider_payouts: {
+        Row: {
+          amount: number
+          id: string
+          leads_count: number
+          notes: string | null
+          processed_at: string | null
+          processed_by: string | null
+          provider_id: string
+          requested_at: string
+          status: string
+        }
+        Insert: {
+          amount: number
+          id?: string
+          leads_count?: number
+          notes?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          provider_id: string
+          requested_at?: string
+          status?: string
+        }
+        Update: {
+          amount?: number
+          id?: string
+          leads_count?: number
+          notes?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          provider_id?: string
+          requested_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      provider_profiles: {
+        Row: {
+          approval_status: string
+          avatar_url: string | null
+          business_address: string | null
+          commission_rate: number
+          company_name: string
+          contact_person: string
+          created_at: string
+          email: string
+          id: string
+          lead_source_description: string | null
+          payout_method: string | null
+          pending_payout: number
+          phone: string | null
+          rejection_reason: string | null
+          total_earnings: number
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          approval_status?: string
+          avatar_url?: string | null
+          business_address?: string | null
+          commission_rate?: number
+          company_name: string
+          contact_person: string
+          created_at?: string
+          email: string
+          id: string
+          lead_source_description?: string | null
+          payout_method?: string | null
+          pending_payout?: number
+          phone?: string | null
+          rejection_reason?: string | null
+          total_earnings?: number
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          approval_status?: string
+          avatar_url?: string | null
+          business_address?: string | null
+          commission_rate?: number
+          company_name?: string
+          contact_person?: string
+          created_at?: string
+          email?: string
+          id?: string
+          lead_source_description?: string | null
+          payout_method?: string | null
+          pending_payout?: number
+          phone?: string | null
+          rejection_reason?: string | null
+          total_earnings?: number
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       purchases: {
         Row: {
+          buyer_type: string | null
+          buyer_user_id: string | null
           dealer_id: string
           dealer_tier_at_purchase: string
           delivery_method: string
@@ -308,6 +493,8 @@ export type Database = {
           purchased_at: string
         }
         Insert: {
+          buyer_type?: string | null
+          buyer_user_id?: string | null
           dealer_id: string
           dealer_tier_at_purchase: string
           delivery_method: string
@@ -318,6 +505,8 @@ export type Database = {
           purchased_at?: string
         }
         Update: {
+          buyer_type?: string | null
+          buyer_user_id?: string | null
           dealer_id?: string
           dealer_tier_at_purchase?: string
           delivery_method?: string
@@ -423,6 +612,8 @@ export type Database = {
         Row: {
           amount: number
           balance_after: number
+          buyer_type: string | null
+          buyer_user_id: string | null
           created_at: string
           created_by: string | null
           dealer_id: string
@@ -434,6 +625,8 @@ export type Database = {
         Insert: {
           amount: number
           balance_after: number
+          buyer_type?: string | null
+          buyer_user_id?: string | null
           created_at?: string
           created_by?: string | null
           dealer_id: string
@@ -445,6 +638,8 @@ export type Database = {
         Update: {
           amount?: number
           balance_after?: number
+          buyer_type?: string | null
+          buyer_user_id?: string | null
           created_at?: string
           created_by?: string | null
           dealer_id?: string
@@ -468,6 +663,7 @@ export type Database = {
       leads_public: {
         Row: {
           ai_score: number | null
+          approved_at: string | null
           buyer_type: string | null
           city: string | null
           created_at: string | null
@@ -481,11 +677,13 @@ export type Database = {
           id: string | null
           income: number | null
           initials: string | null
+          listed_by_role: string | null
           price: number | null
           province: string | null
           purchased_by_dealer_id: string | null
           quality_grade: string | null
           reference_code: string | null
+          review_status: string | null
           sold_at: string | null
           sold_status: string | null
           vehicle_preference: string | null
@@ -493,6 +691,7 @@ export type Database = {
         }
         Insert: {
           ai_score?: number | null
+          approved_at?: string | null
           buyer_type?: string | null
           city?: string | null
           created_at?: string | null
@@ -506,11 +705,13 @@ export type Database = {
           id?: string | null
           income?: number | null
           initials?: string | null
+          listed_by_role?: string | null
           price?: number | null
           province?: string | null
           purchased_by_dealer_id?: string | null
           quality_grade?: string | null
           reference_code?: string | null
+          review_status?: string | null
           sold_at?: string | null
           sold_status?: string | null
           vehicle_preference?: string | null
@@ -518,6 +719,7 @@ export type Database = {
         }
         Update: {
           ai_score?: number | null
+          approved_at?: string | null
           buyer_type?: string | null
           city?: string | null
           created_at?: string | null
@@ -531,11 +733,13 @@ export type Database = {
           id?: string | null
           income?: number | null
           initials?: string | null
+          listed_by_role?: string | null
           price?: number | null
           province?: string | null
           purchased_by_dealer_id?: string | null
           quality_grade?: string | null
           reference_code?: string | null
+          review_status?: string | null
           sold_at?: string | null
           sold_status?: string | null
           vehicle_preference?: string | null
@@ -572,7 +776,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "dealer"
+      app_role: "admin" | "dealer" | "normal_user" | "provider"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -700,7 +904,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "dealer"],
+      app_role: ["admin", "dealer", "normal_user", "provider"],
     },
   },
 } as const

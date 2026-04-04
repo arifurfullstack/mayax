@@ -38,6 +38,17 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Get user role
+    const { data: userRoleRow } = await userClient.from("user_roles").select("role").eq("user_id", user.id).single();
+    const role = userRoleRow?.role;
+
+    if (role !== "dealer" && role !== "normal_user") {
+      return new Response(JSON.stringify({ error: "Only dealers and normal users can buy leads" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Parse body
     const body = await req.json();
     const { lead_ids } = body as { lead_ids: string[] };
@@ -59,25 +70,19 @@ Deno.serve(async (req) => {
     // Use service role client for the atomic DB function
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get dealer record for this user
-    const { data: dealer, error: dealerError } = await adminClient
-      .from("dealers")
-      .select("id, subscription_tier, delivery_preference, approval_status")
-      .eq("user_id", user.id)
-      .single();
+    let tier = 'basic';
+    let deliveryMethod = 'email'; // default for normal users
 
-    if (dealerError || !dealer) {
-      return new Response(JSON.stringify({ error: "Dealer not found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (dealer.approval_status !== "approved") {
-      return new Response(JSON.stringify({ error: "Dealer not approved" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (role === 'dealer') {
+      const { data: dealer } = await adminClient.from("dealers").select("approval_status, subscription_tier, delivery_preference").eq("user_id", user.id).single();
+      if (!dealer || dealer.approval_status !== "approved") {
+        return new Response(JSON.stringify({ error: "Dealer not approved" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      tier = dealer.subscription_tier || 'basic';
+      deliveryMethod = dealer.delivery_preference || 'email';
     }
 
     // Get lead prices
@@ -104,12 +109,13 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const { data: result, error: rpcError } = await adminClient.rpc("purchase_lead", {
-        _dealer_id: dealer.id,
+      const { data: result, error: rpcError } = await adminClient.rpc("purchase_lead_v2", {
+        _buyer_user_id: user.id,
+        _buyer_type: role,
         _lead_id: leadId,
         _price: lead.price,
-        _tier: dealer.subscription_tier,
-        _delivery_method: dealer.delivery_preference,
+        _tier: tier,
+        _delivery_method: deliveryMethod,
       });
 
       if (rpcError) {

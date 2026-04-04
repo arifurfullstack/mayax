@@ -50,7 +50,7 @@ const defaultFilters: Filters = {
 };
 
 export default function Marketplace() {
-  const { dealer, refreshDealer } = useAuth();
+  const { dealer, normalUser, role, refreshProfile } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<Filters>(defaultFilters);
@@ -64,6 +64,7 @@ export default function Marketplace() {
   const LEADS_PER_PAGE = 12;
 
   const tier = dealer?.subscription_tier || 'basic';
+  const walletBalance = role === 'dealer' ? dealer?.wallet_balance : normalUser?.wallet_balance;
 
   useEffect(() => {
     const fetchLeads = async () => {
@@ -175,8 +176,8 @@ export default function Marketplace() {
       if (data?.success) {
         toast.success(`Successfully purchased ${data.purchased} lead${data.purchased > 1 ? 's' : ''}!`);
         setSelected(new Set());
-        // Refresh dealer balance
-        if (refreshDealer) await refreshDealer();
+        // Refresh wallet balance
+        if (refreshProfile) await refreshProfile();
       } else {
         const failedMsg = data?.results?.find((r: any) => !r.success)?.error || 'Purchase failed';
         toast.error(failedMsg);
@@ -347,7 +348,7 @@ export default function Marketplace() {
           <DialogHeader>
             <DialogTitle>Confirm Purchase</DialogTitle>
             <DialogDescription>
-              You are about to purchase {selectedLeads.length} lead{selectedLeads.length > 1 ? 's' : ''} for a total of <strong>${totalPrice.toFixed(2)}</strong>. This amount will be deducted from your wallet balance (${dealer?.wallet_balance?.toFixed(2) ?? '0.00'}).
+              You are about to purchase {selectedLeads.length} lead{selectedLeads.length > 1 ? 's' : ''} for a total of <strong>${totalPrice.toFixed(2)}</strong>. This amount will be deducted from your wallet balance (${walletBalance?.toFixed(2) ?? '0.00'}).
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-1 max-h-40 overflow-y-auto text-sm">

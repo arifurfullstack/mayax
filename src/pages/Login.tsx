@@ -8,6 +8,49 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from 'sonner';
 
+async function getRedirectPath(userId: string): Promise<string> {
+  // Fetch role
+  const { data: roleData } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  const role = roleData?.role;
+
+  if (!role || role === 'admin') return '/admin';
+
+  if (role === 'normal_user') return '/marketplace';
+
+  if (role === 'dealer') {
+    const { data: dealer } = await supabase
+      .from('dealers')
+      .select('approval_status')
+      .eq('user_id', userId)
+      .maybeSingle();
+    const status = dealer?.approval_status;
+    if (status === 'approved') return '/marketplace';
+    if (status === 'rejected') return '/rejected';
+    if (status === 'suspended') return '/suspended';
+    return '/pending-approval';
+  }
+
+  if (role === 'provider') {
+    const { data: provider } = await supabase
+      .from('provider_profiles')
+      .select('approval_status')
+      .eq('id', userId)
+      .maybeSingle();
+    const status = provider?.approval_status;
+    if (status === 'approved') return '/provider/leads';
+    if (status === 'rejected') return '/provider/rejected';
+    if (status === 'suspended') return '/provider/suspended';
+    return '/provider/pending-approval';
+  }
+
+  return '/marketplace';
+}
+
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -17,14 +60,17 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       toast.error(error.message);
+      setLoading(false);
       return;
     }
-    // Redirect handled by App route guards
-    navigate('/marketplace');
+    if (data.user) {
+      const path = await getRedirectPath(data.user.id);
+      navigate(path, { replace: true });
+    }
+    setLoading(false);
   };
 
   return (
@@ -36,14 +82,14 @@ export default function Login() {
           </div>
           <div>
             <CardTitle className="text-xl font-bold">Welcome Back</CardTitle>
-            <CardDescription>Sign in to your dealer account</CardDescription>
+            <CardDescription>Sign in to your MayaX Lead Hub account</CardDescription>
           </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="dealer@example.com" />
+              <Input id="email" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
@@ -54,10 +100,10 @@ export default function Login() {
             </Button>
           </form>
           <div className="mt-4 text-center text-sm text-muted-foreground space-y-2">
-            <Link to="/forgot-password" className="hover:underline block">Forgot Password?</Link>
+            <Link to="/reset-password" className="hover:underline block">Forgot Password?</Link>
             <div className="border-t pt-3">
               <span>Don't have an account? </span>
-              <Link to="/register" className="text-maya-green font-medium hover:underline">Create Dealer Account</Link>
+              <Link to="/register" className="text-maya-green font-medium hover:underline">Create Account</Link>
             </div>
           </div>
         </CardContent>
