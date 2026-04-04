@@ -127,6 +127,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const loadUserData = async (userId: string) => {
+    // DEV MOCK BYPASS
+    const mockEmail = localStorage.getItem('mock_user_email');
+    if (mockEmail) {
+      if (mockEmail === 'normal@mayax.test') {
+        setRole('normal_user');
+        setIsAdmin(false);
+        setNormalUser({ id: userId, full_name: 'Normal Test User', email: mockEmail, wallet_balance: 500 } as NormalUserProfile);
+      } else if (mockEmail === 'dealer@mayax.test') {
+        setRole('dealer');
+        setIsAdmin(false);
+        setDealer({ id: userId, email: mockEmail, approval_status: 'approved', subscription_tier: 'pro', wallet_balance: 1000 } as DealerProfile);
+      } else if (mockEmail === 'provider@mayax.test') {
+        setRole('provider');
+        setIsAdmin(false);
+        setProvider({ id: userId, email: mockEmail, approval_status: 'approved', total_earnings: 0 } as ProviderProfile);
+      } else if (mockEmail === 'admin@mayax.test') {
+        setRole('admin');
+        setIsAdmin(true);
+      }
+      return;
+    }
+
     const userRole = await fetchUserRole(userId);
     setRole(userRole);
     setIsAdmin(userRole === 'admin');
@@ -157,6 +179,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let alive = true;
 
     const applySession = async (session: Session | null) => {
+      // DEV BYPASS: Check if we have a mocked user
+      const mockEmail = localStorage.getItem('mock_user_email');
+      if (mockEmail && alive) {
+        // Map mock email to predefined UUIDs
+        let mockId = '';
+        if (mockEmail === 'normal@mayax.test') mockId = '11111111-1111-1111-1111-111111111111';
+        else if (mockEmail === 'dealer@mayax.test') mockId = '22222222-2222-2222-2222-222222222222';
+        else if (mockEmail === 'provider@mayax.test') mockId = '33333333-3333-3333-3333-333333333333';
+        else if (mockEmail === 'admin@mayax.test') mockId = '44444444-4444-4444-4444-444444444444';
+        
+        if (mockId) {
+          const fakeUser = { id: mockId, email: mockEmail } as User;
+          setSession({ user: fakeUser } as Session);
+          setUser(fakeUser);
+          await loadUserData(fakeUser.id);
+          setLoading(false);
+          return;
+        }
+      }
+
       if (!alive) return;
       setSession(session);
       setUser(session?.user ?? null);
@@ -184,6 +226,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = async () => {
+    localStorage.removeItem('mock_user_email');
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);

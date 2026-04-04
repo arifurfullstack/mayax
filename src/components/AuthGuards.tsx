@@ -53,7 +53,7 @@ export function RequireProvider({ children }: { children: ReactNode }) {
   const { role, provider, loading } = useAuth();
   if (loading) return <LoadingScreen />;
   if (role !== 'provider' || !provider) return <Navigate to="/login" replace />;
-  if (provider.approval_status === 'pending') return <Navigate to="/provider/pending-approval" replace />;
+  if (provider.approval_status === 'pending') return <Navigate to="/provider/pending" replace />;
   if (provider.approval_status === 'rejected') return <Navigate to="/provider/rejected" replace />;
   if (provider.approval_status === 'suspended') return <Navigate to="/provider/suspended" replace />;
   return <>{children}</>;
@@ -91,7 +91,7 @@ export function PublicOnly({ children }: { children: ReactNode }) {
   }
   if (role === 'provider' && provider) {
     if (provider.approval_status === 'approved') return <Navigate to="/provider/leads" replace />;
-    return <Navigate to="/provider/pending-approval" replace />;
+    return <Navigate to="/provider/pending" replace />;
   }
 
   return <>{children}</>;

@@ -483,7 +483,7 @@ export type Database = {
         Row: {
           buyer_type: string | null
           buyer_user_id: string | null
-          dealer_id: string
+          dealer_id: string | null
           dealer_tier_at_purchase: string
           delivery_method: string
           delivery_status: string
@@ -495,7 +495,7 @@ export type Database = {
         Insert: {
           buyer_type?: string | null
           buyer_user_id?: string | null
-          dealer_id: string
+          dealer_id?: string | null
           dealer_tier_at_purchase: string
           delivery_method: string
           delivery_status?: string
@@ -507,7 +507,7 @@ export type Database = {
         Update: {
           buyer_type?: string | null
           buyer_user_id?: string | null
-          dealer_id?: string
+          dealer_id?: string | null
           dealer_tier_at_purchase?: string
           delivery_method?: string
           delivery_status?: string
@@ -616,7 +616,7 @@ export type Database = {
           buyer_user_id: string | null
           created_at: string
           created_by: string | null
-          dealer_id: string
+          dealer_id: string | null
           description: string
           id: string
           reference_id: string | null
@@ -629,7 +629,7 @@ export type Database = {
           buyer_user_id?: string | null
           created_at?: string
           created_by?: string | null
-          dealer_id: string
+          dealer_id?: string | null
           description: string
           id?: string
           reference_id?: string | null
@@ -642,7 +642,7 @@ export type Database = {
           buyer_user_id?: string | null
           created_at?: string
           created_by?: string | null
-          dealer_id?: string
+          dealer_id?: string | null
           description?: string
           id?: string
           reference_id?: string | null
@@ -757,6 +757,10 @@ export type Database = {
       }
     }
     Functions: {
+      admin_delete_user: {
+        Args: { target_user_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -767,6 +771,17 @@ export type Database = {
       purchase_lead: {
         Args: {
           _dealer_id: string
+          _delivery_method: string
+          _lead_id: string
+          _price: number
+          _tier: string
+        }
+        Returns: Json
+      }
+      purchase_lead_v2: {
+        Args: {
+          _buyer_type: string
+          _buyer_user_id: string
           _delivery_method: string
           _lead_id: string
           _price: number

@@ -6,7 +6,7 @@ import DealerDashboard from '@/pages/DealerDashboard';
 import NormalUserDashboard from '@/pages/NormalUserDashboard';
 
 export default function RoleBasedDashboard() {
-  const { role, dealer, normalUser, loading } = useAuth();
+  const { role, dealer, normalUser, provider, loading } = useAuth();
 
   if (loading) return null;
 
@@ -19,6 +19,13 @@ export default function RoleBasedDashboard() {
 
   if (role === 'normal_user' && normalUser) {
     return <NormalUserLayout><NormalUserDashboard /></NormalUserLayout>;
+  }
+
+  if (role === 'provider' && provider) {
+    if (provider.approval_status === 'pending') return <Navigate to="/provider/pending" replace />;
+    if (provider.approval_status === 'rejected') return <Navigate to="/provider/rejected" replace />;
+    if (provider.approval_status === 'suspended') return <Navigate to="/provider/suspended" replace />;
+    return <Navigate to="/provider" replace />;
   }
 
   return <Navigate to="/login" replace />;

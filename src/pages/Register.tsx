@@ -95,7 +95,7 @@ function NormalUserForm({ onBack }: { onBack: () => void }) {
     if (profileError) { toast.error(profileError.message); return; }
 
     toast.success('Account created! Welcome to MayaX Lead Hub.');
-    navigate('/marketplace');
+    navigate('/dashboard');
   };
 
   return (
@@ -171,7 +171,7 @@ function DealerForm({ onBack }: { onBack: () => void }) {
     setLoading(false);
     if (dealerError) { toast.error(dealerError.message); return; }
     toast.success('Application submitted! We\'ll review it within 24-48 hours.');
-    navigate('/pending-approval');
+    navigate('/dashboard');
   };
 
   return (
@@ -293,7 +293,7 @@ function ProviderForm({ onBack }: { onBack: () => void }) {
     setLoading(false);
     if (profileError) { toast.error(profileError.message); return; }
     toast.success('Provider application submitted! We\'ll review it within 24-48 hours.');
-    navigate('/provider/pending-approval');
+    navigate('/dashboard');
   };
 
   return (

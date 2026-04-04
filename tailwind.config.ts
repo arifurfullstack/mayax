@@ -69,6 +69,9 @@ export default {
           blue: "hsl(var(--maya-blue))",
           steel: "hsl(var(--maya-steel))",
           gray: "hsl(var(--maya-gray))",
+          cyan: "hsl(var(--maya-cyan))",
+          purple: "hsl(var(--maya-purple))",
+          pink: "hsl(var(--maya-pink))",
         },
         grade: {
           aplus: "hsl(var(--grade-aplus))",

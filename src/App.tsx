@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
+import { PlatformSettingsProvider } from "@/hooks/usePlatformSettings";
 
 // Guards
 import { RequireAuth, RequireApproved, RequireAdmin, PublicOnly, RequireProvider, RequireNormalUser, RequireBuyer } from "@/components/AuthGuards";
@@ -58,59 +59,61 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<PublicOnly><Login /></PublicOnly>} />
-            <Route path="/register" element={<PublicOnly><Register /></PublicOnly>} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+      <PlatformSettingsProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<PublicOnly><Login /></PublicOnly>} />
+              <Route path="/register" element={<PublicOnly><Register /></PublicOnly>} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* DEALER ROUTES */}
-            <Route path="/pending-approval" element={<RequireAuth><PendingApproval /></RequireAuth>} />
-            <Route path="/rejected" element={<RequireAuth><Rejected /></RequireAuth>} />
-            <Route path="/suspended" element={<RequireAuth><Suspended /></RequireAuth>} />
-            <Route path="/marketplace" element={<RequireAuth><RequireBuyer><DealerLayout><Marketplace /></DealerLayout></RequireBuyer></RequireAuth>} />
-            <Route path="/dashboard" element={<RequireAuth><RoleBasedDashboard /></RequireAuth>} />
-            <Route path="/upgrade-plan" element={<RequireAuth><RequireApproved><DealerLayout><UpgradePlan /></DealerLayout></RequireApproved></RequireAuth>} />
-            <Route path="/wallet" element={<RequireAuth><RequireApproved><DealerLayout><Wallet /></DealerLayout></RequireApproved></RequireAuth>} />
-            <Route path="/purchases" element={<RequireAuth><RequireApproved><DealerLayout><Purchases /></DealerLayout></RequireApproved></RequireAuth>} />
-            <Route path="/settings" element={<RequireAuth><RequireApproved><DealerLayout><Settings /></DealerLayout></RequireApproved></RequireAuth>} />
-            <Route path="/auto-pay" element={<RequireAuth><RequireApproved><DealerLayout><AutoPay /></DealerLayout></RequireApproved></RequireAuth>} />
+              {/* DEALER ROUTES */}
+              <Route path="/pending-approval" element={<RequireAuth><PendingApproval /></RequireAuth>} />
+              <Route path="/rejected" element={<RequireAuth><Rejected /></RequireAuth>} />
+              <Route path="/suspended" element={<RequireAuth><Suspended /></RequireAuth>} />
+              <Route path="/marketplace" element={<RequireAuth><RequireBuyer><DealerLayout><Marketplace /></DealerLayout></RequireBuyer></RequireAuth>} />
+              <Route path="/dashboard" element={<RequireAuth><RoleBasedDashboard /></RequireAuth>} />
+              <Route path="/upgrade-plan" element={<RequireAuth><RequireApproved><DealerLayout><UpgradePlan /></DealerLayout></RequireApproved></RequireAuth>} />
+              <Route path="/wallet" element={<RequireAuth><RequireApproved><DealerLayout><Wallet /></DealerLayout></RequireApproved></RequireAuth>} />
+              <Route path="/purchases" element={<RequireAuth><RequireApproved><DealerLayout><Purchases /></DealerLayout></RequireApproved></RequireAuth>} />
+              <Route path="/settings" element={<RequireAuth><RequireApproved><DealerLayout><Settings /></DealerLayout></RequireApproved></RequireAuth>} />
+              <Route path="/auto-pay" element={<RequireAuth><RequireApproved><DealerLayout><AutoPay /></DealerLayout></RequireApproved></RequireAuth>} />
 
-            {/* NORMAL USER ROUTES */}
-            <Route path="/individual/marketplace" element={<RequireAuth><RequireNormalUser><NormalUserLayout><Marketplace /></NormalUserLayout></RequireNormalUser></RequireAuth>} />
-            <Route path="/individual/wallet" element={<RequireAuth><RequireNormalUser><NormalUserLayout><Wallet /></NormalUserLayout></RequireNormalUser></RequireAuth>} />
-            <Route path="/individual/purchases" element={<RequireAuth><RequireNormalUser><NormalUserLayout><Purchases /></NormalUserLayout></RequireNormalUser></RequireAuth>} />
-            <Route path="/individual/settings" element={<RequireAuth><RequireNormalUser><NormalUserLayout><Settings /></NormalUserLayout></RequireNormalUser></RequireAuth>} />
+              {/* NORMAL USER ROUTES */}
+              <Route path="/individual/marketplace" element={<RequireAuth><RequireNormalUser><NormalUserLayout><Marketplace /></NormalUserLayout></RequireNormalUser></RequireAuth>} />
+              <Route path="/individual/wallet" element={<RequireAuth><RequireNormalUser><NormalUserLayout><Wallet /></NormalUserLayout></RequireNormalUser></RequireAuth>} />
+              <Route path="/individual/purchases" element={<RequireAuth><RequireNormalUser><NormalUserLayout><Purchases /></NormalUserLayout></RequireNormalUser></RequireAuth>} />
+              <Route path="/individual/settings" element={<RequireAuth><RequireNormalUser><NormalUserLayout><Settings /></NormalUserLayout></RequireNormalUser></RequireAuth>} />
 
-            {/* PROVIDER ROUTES */}
-            <Route path="/provider/pending" element={<RequireAuth><RequireProvider><ProviderPendingApproval /></RequireProvider></RequireAuth>} />
-            <Route path="/provider/rejected" element={<RequireAuth><RequireProvider><ProviderRejected /></RequireProvider></RequireAuth>} />
-            <Route path="/provider/suspended" element={<RequireAuth><RequireProvider><ProviderSuspended /></RequireProvider></RequireAuth>} />
-            
-            <Route path="/provider" element={<RequireAuth><RequireProvider><ProviderLayout><ProviderDashboard /></ProviderLayout></RequireProvider></RequireAuth>} />
-            <Route path="/provider/leads" element={<RequireAuth><RequireProvider><ProviderLayout><ProviderLeads /></ProviderLayout></RequireProvider></RequireAuth>} />
-            <Route path="/provider/leads/new" element={<RequireAuth><RequireProvider><ProviderLayout><ProviderAddLead /></ProviderLayout></RequireProvider></RequireAuth>} />
-            <Route path="/provider/earnings" element={<RequireAuth><RequireProvider><ProviderLayout><ProviderEarnings /></ProviderLayout></RequireProvider></RequireAuth>} />
-            <Route path="/provider/settings" element={<RequireAuth><RequireProvider><ProviderLayout><ProviderSettings /></ProviderLayout></RequireProvider></RequireAuth>} />
+              {/* PROVIDER ROUTES */}
+              <Route path="/provider/pending" element={<RequireAuth><RequireProvider><ProviderPendingApproval /></RequireProvider></RequireAuth>} />
+              <Route path="/provider/rejected" element={<RequireAuth><RequireProvider><ProviderRejected /></RequireProvider></RequireAuth>} />
+              <Route path="/provider/suspended" element={<RequireAuth><RequireProvider><ProviderSuspended /></RequireProvider></RequireAuth>} />
+              
+              <Route path="/provider" element={<RequireAuth><RequireProvider><ProviderLayout><ProviderDashboard /></ProviderLayout></RequireProvider></RequireAuth>} />
+              <Route path="/provider/leads" element={<RequireAuth><RequireProvider><ProviderLayout><ProviderLeads /></ProviderLayout></RequireProvider></RequireAuth>} />
+              <Route path="/provider/leads/new" element={<RequireAuth><RequireProvider><ProviderLayout><ProviderAddLead /></ProviderLayout></RequireProvider></RequireAuth>} />
+              <Route path="/provider/earnings" element={<RequireAuth><RequireProvider><ProviderLayout><ProviderEarnings /></ProviderLayout></RequireProvider></RequireAuth>} />
+              <Route path="/provider/settings" element={<RequireAuth><RequireProvider><ProviderLayout><ProviderSettings /></ProviderLayout></RequireProvider></RequireAuth>} />
 
-            {/* ADMIN ROUTES */}
-            <Route path="/admin" element={<RequireAuth><RequireAdmin><AdminLayout><AdminDashboard /></AdminLayout></RequireAdmin></RequireAuth>} />
-            <Route path="/admin/users" element={<RequireAuth><RequireAdmin><AdminLayout><AdminUsers /></AdminLayout></RequireAdmin></RequireAuth>} />
-            <Route path="/admin/leads/review" element={<RequireAuth><RequireAdmin><AdminLayout><AdminLeadReview /></AdminLayout></RequireAdmin></RequireAuth>} />
-            <Route path="/admin/leads" element={<RequireAuth><RequireAdmin><AdminLayout><AdminLeads /></AdminLayout></RequireAdmin></RequireAuth>} />
-            <Route path="/admin/leads/new" element={<RequireAuth><RequireAdmin><AdminLayout><AdminAddLead /></AdminLayout></RequireAdmin></RequireAuth>} />
-            <Route path="/admin/payouts" element={<RequireAuth><RequireAdmin><AdminLayout><AdminProviderPayouts /></AdminLayout></RequireAdmin></RequireAuth>} />
-            <Route path="/admin/delivery-logs" element={<RequireAuth><RequireAdmin><AdminLayout><AdminDeliveryLogs /></AdminLayout></RequireAdmin></RequireAuth>} />
-            <Route path="/admin/settings" element={<RequireAuth><RequireAdmin><AdminLayout><AdminSettings /></AdminLayout></RequireAdmin></RequireAuth>} />
+              {/* ADMIN ROUTES */}
+              <Route path="/admin" element={<RequireAuth><RequireAdmin><AdminLayout><AdminDashboard /></AdminLayout></RequireAdmin></RequireAuth>} />
+              <Route path="/admin/users" element={<RequireAuth><RequireAdmin><AdminLayout><AdminUsers /></AdminLayout></RequireAdmin></RequireAuth>} />
+              <Route path="/admin/leads/review" element={<RequireAuth><RequireAdmin><AdminLayout><AdminLeadReview /></AdminLayout></RequireAdmin></RequireAuth>} />
+              <Route path="/admin/leads" element={<RequireAuth><RequireAdmin><AdminLayout><AdminLeads /></AdminLayout></RequireAdmin></RequireAuth>} />
+              <Route path="/admin/leads/new" element={<RequireAuth><RequireAdmin><AdminLayout><AdminAddLead /></AdminLayout></RequireAdmin></RequireAuth>} />
+              <Route path="/admin/payouts" element={<RequireAuth><RequireAdmin><AdminLayout><AdminProviderPayouts /></AdminLayout></RequireAdmin></RequireAuth>} />
+              <Route path="/admin/delivery-logs" element={<RequireAuth><RequireAdmin><AdminLayout><AdminDeliveryLogs /></AdminLayout></RequireAdmin></RequireAuth>} />
+              <Route path="/admin/settings" element={<RequireAuth><RequireAdmin><AdminLayout><AdminSettings /></AdminLayout></RequireAdmin></RequireAuth>} />
 
-            {/* Redirects */}
-            <Route path="/" element={<Landing />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
+              {/* Redirects */}
+              <Route path="/" element={<Landing />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </PlatformSettingsProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
