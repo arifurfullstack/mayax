@@ -67,53 +67,55 @@ export default function AdminDeliveryLogs() {
         </Button>
       </div>
 
-      <div className="bg-white rounded-lg border shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Time</TableHead>
-              <TableHead>Dealer</TableHead>
-              <TableHead>Channel</TableHead>
-              <TableHead>Endpoint</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Details</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow><TableCell colSpan={6} className="text-center py-12 text-muted-foreground">Loading logs...</TableCell></TableRow>
-            ) : logs.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center py-12 text-muted-foreground">No delivery logs found.</TableCell></TableRow>
-            ) : logs.map(l => (
-              <TableRow key={l.id}>
-                <TableCell className="text-sm whitespace-nowrap">{new Date(l.attempted_at).toLocaleString()}</TableCell>
-                <TableCell className="font-medium">{l.purchases?.dealers?.dealership_name || 'Unknown'}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="uppercase text-xs">{l.channel}</Badge>
-                </TableCell>
-                <TableCell className="font-mono text-xs max-w-[200px] truncate" title={l.endpoint}>{l.endpoint}</TableCell>
-                <TableCell>
-                  {l.success ? (
-                    <Badge variant="outline" className="bg-emerald-100 text-emerald-800 border-emerald-200">
-                      <CheckCircle2 className="h-3 w-3 mr-1" /> Success ({l.response_code})
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">
-                      <XCircle className="h-3 w-3 mr-1" /> Failed ({l.response_code || 'N/A'})
-                    </Badge>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {l.error_details ? (
-                    <span className="text-xs text-red-600 max-w-xs block truncate" title={l.error_details}>{l.error_details}</span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">Retry: {l.retry_count}</span>
-                  )}
-                </TableCell>
+      <div className="bg-card text-card-foreground rounded-lg border border-border shadow-sm overflow-hidden">
+        <div className="w-full overflow-x-auto">
+          <Table>
+            <TableHeader className="bg-muted/40">
+              <TableRow>
+                <TableHead>Time</TableHead>
+                <TableHead>Dealer</TableHead>
+                <TableHead>Channel</TableHead>
+                <TableHead>Endpoint</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Details</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow><TableCell colSpan={6} className="text-center py-12 text-muted-foreground">Loading logs...</TableCell></TableRow>
+              ) : logs.length === 0 ? (
+                <TableRow><TableCell colSpan={6} className="text-center py-12 text-muted-foreground">No delivery logs found.</TableCell></TableRow>
+              ) : logs.map(l => (
+                <TableRow key={l.id} className="hover:bg-muted/50">
+                  <TableCell className="text-sm whitespace-nowrap">{new Date(l.attempted_at).toLocaleString()}</TableCell>
+                  <TableCell className="font-medium">{l.purchases?.dealers?.dealership_name || 'Unknown'}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="uppercase text-xs">{l.channel}</Badge>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs max-w-[200px] truncate" title={l.endpoint}>{l.endpoint}</TableCell>
+                  <TableCell>
+                    {l.success ? (
+                      <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
+                        <CheckCircle2 className="h-3 w-3 mr-1" /> Success ({l.response_code})
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">
+                        <XCircle className="h-3 w-3 mr-1" /> Failed ({l.response_code || 'N/A'})
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {l.error_details ? (
+                      <span className="text-xs text-destructive max-w-xs block truncate" title={l.error_details}>{l.error_details}</span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Retry: {l.retry_count}</span>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

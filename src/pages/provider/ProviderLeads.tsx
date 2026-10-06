@@ -153,10 +153,11 @@ export default function ProviderLeads() {
       </div>
 
       {/* Table */}
-      <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
+      <div className="bg-card text-card-foreground rounded-xl border border-border shadow-sm overflow-hidden">
+        <div className="w-full overflow-x-auto">
+          <Table>
+            <TableHeader className="bg-muted/40">
+              <TableRow>
               <TableHead>Reference</TableHead>
               <TableHead>Initials</TableHead>
               <TableHead>Type</TableHead>
@@ -223,6 +224,7 @@ export default function ProviderLeads() {
             ))}
           </TableBody>
         </Table>
+        </div>
       </div>
     </div>
   );

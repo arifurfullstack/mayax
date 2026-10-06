@@ -96,51 +96,53 @@ export default function ProviderEarnings() {
       </div>
 
       {/* Earnings table */}
-      <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Lead Ref</TableHead>
-              <TableHead>Grade</TableHead>
-              <TableHead>Sale Price</TableHead>
-              <TableHead>Platform Fee</TableHead>
-              <TableHead>Your Payout</TableHead>
-              <TableHead>Date Sold</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow><TableCell colSpan={7} className="text-center py-12 text-muted-foreground">Loading earnings...</TableCell></TableRow>
-            ) : earnings.length === 0 ? (
-              <TableRow><TableCell colSpan={7} className="text-center py-12 text-muted-foreground">No sold leads yet. Start submitting leads to earn!</TableCell></TableRow>
-            ) : earnings.map(e => {
-              const platformFee = e.price * commissionRate;
-              const payout = e.provider_payout_amount ?? (e.price * (1 - commissionRate));
-              return (
-                <TableRow key={e.id}>
-                  <TableCell className="font-mono text-xs font-medium">{e.reference_code}</TableCell>
-                  <TableCell><span className="font-bold">{e.quality_grade}</span></TableCell>
-                  <TableCell className="font-semibold">${e.price.toFixed(2)}</TableCell>
-                  <TableCell className="text-muted-foreground text-sm">-${platformFee.toFixed(2)}</TableCell>
-                  <TableCell className="font-bold text-maya-green">${payout.toFixed(2)}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {e.sold_at ? new Date(e.sold_at).toLocaleDateString() : '—'}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={
-                      e.provider_payout_status === 'paid'
-                        ? 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400'
-                        : 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400'
-                    }>
-                      {e.provider_payout_status === 'paid' ? 'Paid Out' : 'Pending'}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+      <div className="bg-card text-card-foreground rounded-xl border border-border shadow-sm overflow-hidden">
+        <div className="w-full overflow-x-auto">
+          <Table>
+            <TableHeader className="bg-muted/40">
+              <TableRow>
+                <TableHead>Lead Ref</TableHead>
+                <TableHead>Grade</TableHead>
+                <TableHead>Sale Price</TableHead>
+                <TableHead>Platform Fee</TableHead>
+                <TableHead>Your Payout</TableHead>
+                <TableHead>Date Sold</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow><TableCell colSpan={7} className="text-center py-12 text-muted-foreground">Loading earnings...</TableCell></TableRow>
+              ) : earnings.length === 0 ? (
+                <TableRow><TableCell colSpan={7} className="text-center py-12 text-muted-foreground">No sold leads yet. Start submitting leads to earn!</TableCell></TableRow>
+              ) : earnings.map(e => {
+                const platformFee = e.price * commissionRate;
+                const payout = e.provider_payout_amount ?? (e.price * (1 - commissionRate));
+                return (
+                  <TableRow key={e.id} className="hover:bg-muted/50">
+                    <TableCell className="font-mono text-xs font-medium">{e.reference_code}</TableCell>
+                    <TableCell><span className="font-bold">{e.quality_grade}</span></TableCell>
+                    <TableCell className="font-semibold">${e.price.toFixed(2)}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">-${platformFee.toFixed(2)}</TableCell>
+                    <TableCell className="font-bold text-maya-green">${payout.toFixed(2)}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {e.sold_at ? new Date(e.sold_at).toLocaleDateString() : '—'}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={
+                        e.provider_payout_status === 'paid'
+                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                          : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                      }>
+                        {e.provider_payout_status === 'paid' ? 'Paid Out' : 'Pending'}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       {/* Payout request */}
