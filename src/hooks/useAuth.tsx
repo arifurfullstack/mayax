@@ -126,49 +126,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const loadUserData = async (userId: string) => {
-    // DEV MOCK BYPASS
-    const mockEmail = localStorage.getItem('mock_user_email');
-    if (mockEmail) {
-      if (mockEmail === 'normal@mayax.test') {
-        setRole('normal_user');
-        setIsAdmin(false);
-        setNormalUser({ id: userId, full_name: 'Normal Test User', email: mockEmail, wallet_balance: 500 } as NormalUserProfile);
-      } else if (mockEmail === 'dealer@mayax.test') {
-        setRole('dealer');
-        setIsAdmin(false);
-        setDealer({ id: userId, email: mockEmail, approval_status: 'approved', subscription_tier: 'pro', wallet_balance: 1000 } as DealerProfile);
-      } else if (mockEmail === 'provider@mayax.test') {
-        setRole('provider');
-        setIsAdmin(false);
-        setProvider({ id: userId, email: mockEmail, approval_status: 'approved', total_earnings: 0 } as ProviderProfile);
-      } else if (mockEmail === 'admin@mayax.test') {
-        setRole('admin');
-        setIsAdmin(true);
-      }
-      return;
-    }
-
-    const userRole = await fetchUserRole(userId);
-    setRole(userRole);
-    setIsAdmin(userRole === 'admin');
-
-    // Reset all profiles
+  const resetUserState = () => {
+    setRole(null);
     setDealer(null);
     setNormalUser(null);
     setProvider(null);
+    setIsAdmin(false);
+  };
 
-    if (userRole === 'dealer') {
-      const d = await fetchDealerProfile(userId);
-      setDealer(d);
-    } else if (userRole === 'normal_user') {
-      const n = await fetchNormalUserProfile(userId);
-      setNormalUser(n);
-    } else if (userRole === 'provider') {
-      const p = await fetchProviderProfile(userId);
-      setProvider(p);
+  const loadUserData = async (userId: string) => {
+    try {
+      // DEV MOCK BYPASS
+      const mockEmail = localStorage.getItem('mock_user_email');
+      if (mockEmail) {
+        if (mockEmail === 'normal@mayax.test') {
+          setRole('normal_user');
+          setIsAdmin(false);
+          setNormalUser({ id: userId, full_name: 'Normal Test User', email: mockEmail, wallet_balance: 500 } as NormalUserProfile);
+        } else if (mockEmail === 'dealer@mayax.test') {
+          setRole('dealer');
+          setIsAdmin(false);
+          setDealer({ id: userId, email: mockEmail, approval_status: 'approved', subscription_tier: 'pro', wallet_balance: 1000 } as DealerProfile);
+        } else if (mockEmail === 'provider@mayax.test') {
+          setRole('provider');
+          setIsAdmin(false);
+          setProvider({ id: userId, email: mockEmail, approval_status: 'approved', total_earnings: 0 } as ProviderProfile);
+        } else if (mockEmail === 'admin@mayax.test') {
+          setRole('admin');
+          setIsAdmin(true);
+        }
+        return;
+      }
+
+      const userRole = await fetchUserRole(userId);
+      setRole(userRole);
+      setIsAdmin(userRole === 'admin');
+
+      // Reset all profiles
+      setDealer(null);
+      setNormalUser(null);
+      setProvider(null);
+
+      if (userRole === 'dealer') {
+        const d = await fetchDealerProfile(userId);
+        setDealer(d);
+      } else if (userRole === 'normal_user') {
+        const n = await fetchNormalUserProfile(userId);
+        setNormalUser(n);
+      } else if (userRole === 'provider') {
+        const p = await fetchProviderProfile(userId);
+        setProvider(p);
+      }
+    } catch (err) {
+      console.error('Error loading user profile data:', err);
     }
-    // admin: no extra profile table needed
   };
 
   const refreshProfile = async () => {
@@ -178,63 +189,76 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let alive = true;
 
-    const applySession = async (session: Session | null) => {
-      // DEV BYPASS: Check if we have a mocked user
-      const mockEmail = localStorage.getItem('mock_user_email');
-      if (mockEmail && alive) {
-        // Map mock email to predefined UUIDs
-        let mockId = '';
-        if (mockEmail === 'normal@mayax.test') mockId = '11111111-1111-1111-1111-111111111111';
-        else if (mockEmail === 'dealer@mayax.test') mockId = '22222222-2222-2222-2222-222222222222';
-        else if (mockEmail === 'provider@mayax.test') mockId = '33333333-3333-3333-3333-333333333333';
-        else if (mockEmail === 'admin@mayax.test') mockId = '44444444-4444-4444-4444-444444444444';
-        
-        if (mockId) {
-          const fakeUser = { id: mockId, email: mockEmail } as User;
-          setSession({ user: fakeUser } as Session);
-          setUser(fakeUser);
-          await loadUserData(fakeUser.id);
-          setLoading(false);
-          return;
-        }
+    // Fail-safe: Never stay stuck in loading forever (3.5s max)
+    const timeoutId = setTimeout(() => {
+      if (alive) {
+        setLoading((prev) => {
+          if (prev) {
+            console.warn('Auth initialization timed out after 3.5s - releasing loading screen');
+            return false;
+          }
+          return prev;
+        });
       }
+    }, 3500);
 
+    const applySession = async (currentSession: Session | null) => {
       if (!alive) return;
-      setSession(session);
-      setUser(session?.user ?? null);
+      try {
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
 
-      if (session?.user) {
-        await loadUserData(session.user.id);
-      } else {
-        setRole(null);
-        setDealer(null);
-        setNormalUser(null);
-        setProvider(null);
-        setIsAdmin(false);
+        if (currentSession?.user) {
+          await loadUserData(currentSession.user.id);
+        } else {
+          resetUserState();
+        }
+      } catch (err) {
+        console.error('applySession error:', err);
+        resetUserState();
+      } finally {
+        if (alive) setLoading(false);
       }
-
-      if (alive) setLoading(false);
     };
 
-    supabase.auth.getSession().then(({ data }) => applySession(data.session));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => applySession(session));
+    supabase.auth.getSession()
+      .then(({ data }) => applySession(data.session))
+      .catch((err) => {
+        console.error('getSession failed:', err);
+        if (alive) setLoading(false);
+      });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, newSession) => {
+      applySession(newSession);
+    });
 
     return () => {
       alive = false;
+      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, []);
 
   const signOut = async () => {
-    localStorage.removeItem('mock_user_email');
-    await supabase.auth.signOut();
-    setSession(null);
-    setUser(null);
-    setRole(null);
-    setDealer(null);
-    setNormalUser(null);
-    setProvider(null);
-    setIsAdmin(false);
+    try {
+      localStorage.removeItem('mock_user_email');
+      // Race Supabase signOut with a 1.2s timeout so slow networks never block signout
+      await Promise.race([
+        supabase.auth.signOut(),
+        new Promise((resolve) => setTimeout(resolve, 1200))
+      ]);
+    } catch (err) {
+      console.warn('signOut error:', err);
+    } finally {
+      // Clear storage and state immediately
+      localStorage.clear();
+      sessionStorage.clear();
+      setSession(null);
+      setUser(null);
+      resetUserState();
+      setLoading(false);
+      window.location.href = '/login';
+    }
   };
 
   return (
