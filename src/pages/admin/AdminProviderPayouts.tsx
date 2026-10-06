@@ -81,52 +81,54 @@ export default function AdminProviderPayouts() {
         <p className="text-muted-foreground mt-1">Manage payout requests from lead providers.</p>
       </div>
 
-      <div className="bg-white rounded-lg border shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Provider</TableHead>
-              <TableHead>Requested On</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Leads</TableHead>
-              <TableHead>Pref. Method</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow><TableCell colSpan={7} className="text-center py-12 text-muted-foreground">Loading payouts...</TableCell></TableRow>
-            ) : payouts.length === 0 ? (
-              <TableRow><TableCell colSpan={7} className="text-center py-12 text-muted-foreground">No payout requests.</TableCell></TableRow>
-            ) : payouts.map(p => (
-              <TableRow key={p.id}>
-                <TableCell>
-                  <p className="font-medium">{p.provider_profiles?.company_name}</p>
-                  <p className="text-xs text-muted-foreground">{p.provider_profiles?.email}</p>
-                </TableCell>
-                <TableCell className="text-sm">{new Date(p.requested_at).toLocaleString()}</TableCell>
-                <TableCell className="font-bold text-maya-green">${p.amount.toFixed(2)}</TableCell>
-                <TableCell>{p.leads_count}</TableCell>
-                <TableCell className="text-sm">{p.provider_profiles?.payout_method || 'Not set'}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className={
-                    p.status === 'paid' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-amber-100 text-amber-800 border-amber-200'
-                  }>
-                    {p.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  {p.status === 'pending' && (
-                    <Button size="sm" variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50" onClick={() => markPaid(p.id, p.provider_id, p.amount)}>
-                      <CheckCircle2 className="h-4 w-4 mr-1.5" />Mark Paid
-                    </Button>
-                  )}
-                </TableCell>
+      <div className="bg-card text-card-foreground rounded-lg border border-border shadow-sm overflow-hidden">
+        <div className="w-full overflow-x-auto">
+          <Table>
+            <TableHeader className="bg-muted/40">
+              <TableRow>
+                <TableHead>Provider</TableHead>
+                <TableHead>Requested On</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Leads</TableHead>
+                <TableHead>Pref. Method</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow><TableCell colSpan={7} className="text-center py-12 text-muted-foreground">Loading payouts...</TableCell></TableRow>
+              ) : payouts.length === 0 ? (
+                <TableRow><TableCell colSpan={7} className="text-center py-12 text-muted-foreground">No payout requests.</TableCell></TableRow>
+              ) : payouts.map(p => (
+                <TableRow key={p.id} className="hover:bg-muted/50">
+                  <TableCell>
+                    <p className="font-medium">{p.provider_profiles?.company_name}</p>
+                    <p className="text-xs text-muted-foreground">{p.provider_profiles?.email}</p>
+                  </TableCell>
+                  <TableCell className="text-sm">{new Date(p.requested_at).toLocaleString()}</TableCell>
+                  <TableCell className="font-bold text-maya-green">${Number(p.amount || 0).toFixed(2)}</TableCell>
+                  <TableCell>{p.leads_count}</TableCell>
+                  <TableCell className="text-sm">{p.provider_profiles?.payout_method || 'Not set'}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={
+                      p.status === 'paid' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                    }>
+                      {p.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {p.status === 'pending' && (
+                      <Button size="sm" variant="outline" className="border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10" onClick={() => markPaid(p.id, p.provider_id, p.amount)}>
+                        <CheckCircle2 className="h-4 w-4 mr-1.5" />Mark Paid
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

@@ -143,10 +143,11 @@ export default function AdminLeadReview() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow>
+      <div className="bg-card text-card-foreground rounded-lg border border-border shadow-sm overflow-hidden">
+        <div className="w-full overflow-x-auto">
+          <Table>
+            <TableHeader className="bg-muted/40">
+              <TableRow>
               <TableHead>Reference</TableHead>
               <TableHead>Provider</TableHead>
               <TableHead>Submitted</TableHead>
@@ -184,6 +185,7 @@ export default function AdminLeadReview() {
             ))}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {/* APPROVE DIALOG */}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Search, CheckCircle, XCircle, Ban } from 'lucide-react';
+import { ServerPagination } from '@/components/shared/ServerPagination';
 
 interface Dealer {
   id: string;
@@ -34,21 +35,53 @@ export default function AdminDealers() {
   const [dealers, setDealers] = useState<Dealer[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [totalCount, setTotalCount] = useState(0);
+  const [pendingCount, setPendingCount] = useState(0);
   const [selectedDealer, setSelectedDealer] = useState<Dealer | null>(null);
   const [actionType, setActionType] = useState<'approve' | 'reject' | 'suspend' | null>(null);
   const [reason, setReason] = useState('');
 
-  const fetchDealers = async () => {
-    const { data, error } = await supabase.from('dealers').select('*').order('created_at', { ascending: false });
-    if (!error && data) setDealers(data as Dealer[]);
+  const fetchDealers = useCallback(async () => {
+    setLoading(true);
+    const from = (currentPage - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    let query = supabase
+      .from('dealers')
+      .select('*', { count: 'exact' });
+
+    if (search.trim()) {
+      query = query.or(`dealership_name.ilike.%${search.trim()}%,contact_person.ilike.%${search.trim()}%,email.ilike.%${search.trim()}%`);
+    }
+
+    query = query.order('created_at', { ascending: false }).range(from, to);
+
+    const { data, error, count } = await query;
+    if (!error && data) {
+      setDealers(data as Dealer[]);
+      setTotalCount(count || 0);
+    } else if (error) {
+      toast.error(error.message);
+    }
+
+    // Fetch pending count
+    const { count: pending } = await supabase
+      .from('dealers')
+      .select('*', { count: 'exact', head: true })
+      .eq('approval_status', 'pending');
+    setPendingCount(pending || 0);
+
     setLoading(false);
-  };
+  }, [currentPage, pageSize, search]);
 
-  useEffect(() => { fetchDealers(); }, []);
-
-  const filteredDealers = dealers.filter(d =>
-    `${d.dealership_name} ${d.contact_person} ${d.email}`.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchDealers();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [fetchDealers]);
 
   const handleAction = async () => {
     if (!selectedDealer || !actionType) return;
@@ -67,75 +100,99 @@ export default function AdminDealers() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Dealer Management</h1>
-        <Badge variant="outline" className="text-sm">{dealers.filter(d => d.approval_status === 'pending').length} pending</Badge>
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold">Dealer Management</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Review, approve, and manage registered auto dealerships.</p>
+        </div>
+        <Badge variant="outline" className="text-sm bg-maya-gold/10 text-maya-gold border-maya-gold/20">{pendingCount} pending approval</Badge>
       </div>
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Search dealers..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+        <Input
+          placeholder="Search dealers..."
+          value={search}
+          onChange={e => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="pl-9"
+        />
       </div>
 
-      <div className="bg-card rounded-lg border shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Dealership</TableHead>
-              <TableHead>Contact</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Tier</TableHead>
-              <TableHead>Balance</TableHead>
-              <TableHead>Joined</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
-            ) : filteredDealers.length === 0 ? (
-              <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No dealers found</TableCell></TableRow>
-            ) : filteredDealers.map(d => (
-              <TableRow key={d.id}>
-                <TableCell>
-                  <div><p className="font-medium">{d.dealership_name}</p><p className="text-xs text-muted-foreground">{d.business_type} · {d.province}</p></div>
-                </TableCell>
-                <TableCell>
-                  <div><p className="text-sm">{d.contact_person}</p><p className="text-xs text-muted-foreground">{d.email}</p></div>
-                </TableCell>
-                <TableCell><Badge variant="outline" className={statusColors[d.approval_status]}>{d.approval_status}</Badge></TableCell>
-                <TableCell><span className="text-sm font-medium uppercase">{d.subscription_tier}</span></TableCell>
-                <TableCell><span className="text-sm font-medium">${d.wallet_balance.toFixed(2)}</span></TableCell>
-                <TableCell><span className="text-sm text-muted-foreground">{new Date(d.created_at).toLocaleDateString()}</span></TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    {d.approval_status === 'pending' && (
-                      <>
+      <div className="bg-card text-card-foreground rounded-lg border border-border shadow-sm overflow-hidden">
+        <div className="w-full overflow-x-auto">
+          <Table>
+            <TableHeader className="bg-muted/40">
+              <TableRow>
+                <TableHead>Dealership</TableHead>
+                <TableHead>Contact</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Tier</TableHead>
+                <TableHead>Balance</TableHead>
+                <TableHead>Joined</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading dealers...</TableCell></TableRow>
+              ) : dealers.length === 0 ? (
+                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No dealers found</TableCell></TableRow>
+              ) : dealers.map(d => (
+                <TableRow key={d.id} className="hover:bg-muted/50">
+                  <TableCell>
+                    <div><p className="font-medium">{d.dealership_name}</p><p className="text-xs text-muted-foreground">{d.business_type} · {d.province}</p></div>
+                  </TableCell>
+                  <TableCell>
+                    <div><p className="text-sm">{d.contact_person}</p><p className="text-xs text-muted-foreground">{d.email}</p></div>
+                  </TableCell>
+                  <TableCell><Badge variant="outline" className={statusColors[d.approval_status]}>{d.approval_status}</Badge></TableCell>
+                  <TableCell><span className="text-sm font-medium uppercase">{d.subscription_tier}</span></TableCell>
+                  <TableCell><span className="text-sm font-medium">${Number(d.wallet_balance || 0).toFixed(2)}</span></TableCell>
+                  <TableCell><span className="text-sm text-muted-foreground">{new Date(d.created_at).toLocaleDateString()}</span></TableCell>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      {d.approval_status === 'pending' && (
+                        <>
+                          <Button size="sm" variant="ghost" className="text-maya-green h-8" onClick={() => { setSelectedDealer(d); setActionType('approve'); }}>
+                            <CheckCircle className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="text-destructive h-8" onClick={() => { setSelectedDealer(d); setActionType('reject'); }}>
+                            <XCircle className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                      {d.approval_status === 'approved' && (
+                        <Button size="sm" variant="ghost" className="text-muted-foreground h-8" onClick={() => { setSelectedDealer(d); setActionType('suspend'); }}>
+                          <Ban className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {(d.approval_status === 'rejected' || d.approval_status === 'suspended') && (
                         <Button size="sm" variant="ghost" className="text-maya-green h-8" onClick={() => { setSelectedDealer(d); setActionType('approve'); }}>
                           <CheckCircle className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" variant="ghost" className="text-destructive h-8" onClick={() => { setSelectedDealer(d); setActionType('reject'); }}>
-                          <XCircle className="h-4 w-4" />
-                        </Button>
-                      </>
-                    )}
-                    {d.approval_status === 'approved' && (
-                      <Button size="sm" variant="ghost" className="text-muted-foreground h-8" onClick={() => { setSelectedDealer(d); setActionType('suspend'); }}>
-                        <Ban className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {(d.approval_status === 'rejected' || d.approval_status === 'suspended') && (
-                      <Button size="sm" variant="ghost" className="text-maya-green h-8" onClick={() => { setSelectedDealer(d); setActionType('approve'); }}>
-                        <CheckCircle className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        <ServerPagination
+          currentPage={currentPage}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          isLoading={loading}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={size => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }}
+        />
       </div>
 
       {/* Action dialog */}

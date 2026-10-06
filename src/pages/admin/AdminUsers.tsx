@@ -134,110 +134,122 @@ export default function AdminUsers() {
       </div>
 
       <Tabs defaultValue="dealers">
-        <TabsList className="grid w-[400px] grid-cols-3">
+        <TabsList className="grid w-full sm:w-[400px] grid-cols-3">
           <TabsTrigger value="dealers">Dealers ({filteredDealers.length})</TabsTrigger>
           <TabsTrigger value="providers">Providers ({filteredProviders.length})</TabsTrigger>
           <TabsTrigger value="individual">Individuals ({filteredNormalUsers.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="dealers" className="mt-4">
-          <div className="bg-white rounded-lg border shadow-sm">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Dealership</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Tier</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Joined</TableHead>
-                  <TableHead className="w-12"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredDealers.map(d => (
-                  <TableRow key={d.id}>
-                    <TableCell className="font-medium">{d.dealership_name}</TableCell>
-                    <TableCell>{d.contact_person}</TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{d.email}</TableCell>
-                    <TableCell><Badge variant="outline" className="capitalize">{d.subscription_tier}</Badge></TableCell>
-                    <TableCell><Badge variant="outline" className={statusColors[d.approval_status]}>{d.approval_status}</Badge></TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{new Date(d.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => { setSelectedUser(d); setActionType({type: 'approve', role: 'dealer'}); }}><CheckCircle2 className="h-4 w-4 mr-2" />Approve</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => { setSelectedUser(d); setActionType({type: 'reject', role: 'dealer'}); }} className="text-red-600"><XCircle className="h-4 w-4 mr-2" />Reject</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => { setSelectedUser(d); setActionType({type: 'suspend', role: 'dealer'}); }} className="text-orange-600"><ShieldOff className="h-4 w-4 mr-2" />Suspend</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+          <div className="bg-card text-card-foreground rounded-lg border border-border shadow-sm overflow-hidden">
+            <div className="w-full overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-muted/40">
+                  <TableRow>
+                    <TableHead>Dealership</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Tier</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Joined</TableHead>
+                    <TableHead className="w-12"></TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredDealers.length === 0 ? (
+                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No dealers found.</TableCell></TableRow>
+                  ) : filteredDealers.map(d => (
+                    <TableRow key={d.id} className="hover:bg-muted/50">
+                      <TableCell className="font-medium">{d.dealership_name}</TableCell>
+                      <TableCell>{d.contact_person}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm">{d.email}</TableCell>
+                      <TableCell><Badge variant="outline" className="capitalize">{d.subscription_tier}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className={statusColors[d.approval_status]}>{d.approval_status}</Badge></TableCell>
+                      <TableCell className="text-muted-foreground text-sm">{new Date(d.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => { setSelectedUser(d); setActionType({type: 'approve', role: 'dealer'}); }}><CheckCircle2 className="h-4 w-4 mr-2" />Approve</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { setSelectedUser(d); setActionType({type: 'reject', role: 'dealer'}); }} className="text-red-600"><XCircle className="h-4 w-4 mr-2" />Reject</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { setSelectedUser(d); setActionType({type: 'suspend', role: 'dealer'}); }} className="text-orange-600"><ShieldOff className="h-4 w-4 mr-2" />Suspend</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </TabsContent>
 
         <TabsContent value="providers" className="mt-4">
-          <div className="bg-white rounded-lg border shadow-sm">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Joined</TableHead>
-                  <TableHead className="w-12"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProviders.map(p => (
-                  <TableRow key={p.id}>
-                    <TableCell className="font-medium">{p.company_name}</TableCell>
-                    <TableCell>{p.contact_person}</TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{p.email}</TableCell>
-                    <TableCell><Badge variant="outline" className={statusColors[p.approval_status]}>{p.approval_status}</Badge></TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{new Date(p.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => { setSelectedUser(p); setActionType({type: 'approve', role: 'provider'}); }}><CheckCircle2 className="h-4 w-4 mr-2" />Approve</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => { setSelectedUser(p); setActionType({type: 'reject', role: 'provider'}); }} className="text-red-600"><XCircle className="h-4 w-4 mr-2" />Reject</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => { setSelectedUser(p); setActionType({type: 'suspend', role: 'provider'}); }} className="text-orange-600"><ShieldOff className="h-4 w-4 mr-2" />Suspend</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+          <div className="bg-card text-card-foreground rounded-lg border border-border shadow-sm overflow-hidden">
+            <div className="w-full overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-muted/40">
+                  <TableRow>
+                    <TableHead>Company</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Joined</TableHead>
+                    <TableHead className="w-12"></TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredProviders.length === 0 ? (
+                    <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No providers found.</TableCell></TableRow>
+                  ) : filteredProviders.map(p => (
+                    <TableRow key={p.id} className="hover:bg-muted/50">
+                      <TableCell className="font-medium">{p.company_name}</TableCell>
+                      <TableCell>{p.contact_person}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm">{p.email}</TableCell>
+                      <TableCell><Badge variant="outline" className={statusColors[p.approval_status]}>{p.approval_status}</Badge></TableCell>
+                      <TableCell className="text-muted-foreground text-sm">{new Date(p.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => { setSelectedUser(p); setActionType({type: 'approve', role: 'provider'}); }}><CheckCircle2 className="h-4 w-4 mr-2" />Approve</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { setSelectedUser(p); setActionType({type: 'reject', role: 'provider'}); }} className="text-red-600"><XCircle className="h-4 w-4 mr-2" />Reject</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { setSelectedUser(p); setActionType({type: 'suspend', role: 'provider'}); }} className="text-orange-600"><ShieldOff className="h-4 w-4 mr-2" />Suspend</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </TabsContent>
 
         <TabsContent value="individual" className="mt-4">
-          <div className="bg-white rounded-lg border shadow-sm">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Joined</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredNormalUsers.map(n => (
-                  <TableRow key={n.id}>
-                    <TableCell className="font-medium">{n.full_name}</TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{n.email}</TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{new Date(n.created_at).toLocaleDateString()}</TableCell>
+          <div className="bg-card text-card-foreground rounded-lg border border-border shadow-sm overflow-hidden">
+            <div className="w-full overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-muted/40">
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Joined</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredNormalUsers.length === 0 ? (
+                    <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground">No individuals found.</TableCell></TableRow>
+                  ) : filteredNormalUsers.map(n => (
+                    <TableRow key={n.id} className="hover:bg-muted/50">
+                      <TableCell className="font-medium">{n.full_name}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm">{n.email}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm">{new Date(n.created_at).toLocaleDateString()}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </TabsContent>
       </Tabs>
