@@ -60,7 +60,7 @@ export default function AdminUsers() {
     setLoading(true);
     
     const [dealersRes, providersRes, normalUsersRes] = await Promise.all([
-      supabase.from('dealers').select('user_id as id, email, created_at, dealership_name, contact_person, approval_status, subscription_tier').order('created_at', { ascending: false }),
+      supabase.from('dealers').select('id:user_id, email, created_at, dealership_name, contact_person, approval_status, subscription_tier').order('created_at', { ascending: false }),
       supabase.from('provider_profiles').select('id, email, created_at, company_name, contact_person, approval_status').order('created_at', { ascending: false }),
       supabase.from('normal_user_profiles').select('id, email, created_at, full_name').order('created_at', { ascending: false })
     ]);
